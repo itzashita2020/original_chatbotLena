@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MessageService } from '@/modules/chat'
 import { OpenAIService } from '@/modules/ai'
+import { createClient } from '@/lib/supabase/server'
 
 interface RouteParams {
   params: {
@@ -43,6 +44,39 @@ export async function POST(
     const body = await request.json()
     const { content, model = 'gpt-4' } = body
 
+    // Get user and their API key
+    const supabase = createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Get user's personal API key
+    const { data: userSettings, error: settingsError } = await supabase
+      .from('user_settings')
+      .select('openai_api_key')
+      .eq('user_id', user.id)
+      .single()
+
+    if (settingsError || !userSettings?.openai_api_key) {
+      return NextResponse.json(
+        {
+          error: 'OpenAI API key not configured',
+          message: 'Please add your OpenAI API key in Settings to use the chat.'
+        },
+        { status: 403 }
+      )
+    }
+
+    const userApiKey = userSettings.openai_api_key
+
     // 1. Save user message
     const userMessage = await MessageService.saveMessage({
       chat_id: chatId,
@@ -62,10 +96,11 @@ export async function POST(
       }))
     )
 
-    // 4. Get AI completion
+    // 4. Get AI completion with user's API key
     const aiResponse = await OpenAIService.getCompletion({
       messages: openAIMessages,
-      model
+      model,
+      apiKey: userApiKey
     })
 
     // 5. Save AI response
