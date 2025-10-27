@@ -8,11 +8,6 @@
       "main": true
     }
   },
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "OPENAI_API_KEY": "@openai-api-key"
-  },
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
