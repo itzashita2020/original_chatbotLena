@@ -29,6 +29,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get user's personal API key
+    const { data: userSettings, error: settingsError } = await supabase
+      .from('user_settings')
+      .select('openai_api_key')
+      .eq('user_id', user.id)
+      .single()
+
+    if (settingsError || !userSettings?.openai_api_key) {
+      return new Response(
+        JSON.stringify({
+          error: 'OpenAI API key not configured',
+          message: 'Please add your OpenAI API key in Settings to use the chat.'
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const userApiKey = userSettings.openai_api_key
+
     // Parse request body
     const body = await request.json()
     const { chatId, content, attachmentUrls = [], model = 'gpt-4', skipUserMessage = false } = body
@@ -194,10 +213,11 @@ export async function POST(request: NextRequest) {
           let fullContent = ''
           let tokensUsed = 0
 
-          // Stream chunks from OpenAI
+          // Stream chunks from OpenAI using user's API key
           for await (const chunk of OpenAIService.streamCompletion({
             messages: openAIMessages,
-            model: finalModel
+            model: finalModel,
+            apiKey: userApiKey
           })) {
             if (chunk.content) {
               fullContent += chunk.content

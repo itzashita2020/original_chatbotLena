@@ -21,8 +21,18 @@ export class OpenAIService {
 
   /**
    * Initialize OpenAI client (lazy initialization)
+   * Can accept custom API key for per-user keys
    */
-  private static getClient(): OpenAI {
+  private static getClient(customApiKey?: string): OpenAI {
+    // If custom API key is provided, create a new client instance
+    if (customApiKey) {
+      return new OpenAI({
+        apiKey: customApiKey,
+        dangerouslyAllowBrowser: false
+      })
+    }
+
+    // Otherwise use cached client with env API key (fallback)
     if (!this.client) {
       const apiKey = process.env.OPENAI_API_KEY
 
@@ -43,8 +53,8 @@ export class OpenAIService {
    * Get regular completion from OpenAI (non-streaming)
    * Use this for simple requests where streaming is not needed
    */
-  static async getCompletion(params: AICompletionParams): Promise<AICompletionResult> {
-    const client = this.getClient()
+  static async getCompletion(params: AICompletionParams & { apiKey?: string }): Promise<AICompletionResult> {
+    const client = this.getClient(params.apiKey)
 
     const {
       messages,
@@ -99,9 +109,9 @@ export class OpenAIService {
    * ```
    */
   static async *streamCompletion(
-    params: AICompletionParams
+    params: AICompletionParams & { apiKey?: string }
   ): AsyncGenerator<{ content: string; finish_reason?: string }> {
-    const client = this.getClient()
+    const client = this.getClient(params.apiKey)
 
     const {
       messages,
