@@ -59,7 +59,7 @@
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/AlenaArtamonava/ai-chat-app.git
+git clone https://github.com/itzashita2020/ai-chat-app.git
 cd ai-chat-app
 
 # 2. Install dependencies
