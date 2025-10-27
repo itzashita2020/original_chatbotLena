@@ -1,0 +1,50 @@
+🧪 Testing Export Service
+
+📄 Testing JSON Export...
+✅ JSON Export: 1795 characters
+Sample:
+{
+  "chat": {
+    "id": "test-chat-123",
+    "title": "Test Conversation About AI",
+    "category": "Technology",
+    "tags": [
+      "AI",
+      "Testing",
+      "Export"
+    ],
+    "is_favorite": tr...
+
+📝 Testing Markdown Export...
+✅ Markdown Export: 1298 characters
+Sample:
+# Test Conversation About AI
+
+## Metadata
+
+**Category:** Technology
+**Tags:** AI, Testing, Export
+**Favorite:** ⭐ Yes
+
+**Created:** 24.10.2025, 11:00:00
+**Updated:** 24.10.2025, 11:30:00
+**Exported:**...
+
+📋 Testing TXT Export...
+✅ TXT Export: 1751 characters
+Sample:
+============================================================
+Test Conversation About AI
+============================================================
+
+Category: Technology
+Tags: AI, Testing, Export
+
+Cr...
+
+✅ All export formats tested successfully!
+
+📊 Summary:
+- JSON: 1795 chars
+- Markdown: 1298 chars
+- TXT: 1751 chars
