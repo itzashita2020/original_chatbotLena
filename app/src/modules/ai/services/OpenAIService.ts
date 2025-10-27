@@ -17,43 +17,28 @@ import type {
 } from '../types'
 
 export class OpenAIService {
-  private static client: OpenAI | null = null
-
   /**
-   * Initialize OpenAI client (lazy initialization)
-   * Can accept custom API key for per-user keys
+   * Initialize OpenAI client with REQUIRED user API key
+   * No fallback to environment variables - each user must provide their own key
    */
-  private static getClient(customApiKey?: string): OpenAI {
-    // If custom API key is provided, create a new client instance
-    if (customApiKey) {
-      return new OpenAI({
-        apiKey: customApiKey,
-        dangerouslyAllowBrowser: false
-      })
+  private static getClient(apiKey: string): OpenAI {
+    if (!apiKey) {
+      throw new Error('Personal OpenAI API key is required. Please add your API key in Settings.')
     }
 
-    // Otherwise use cached client with env API key (fallback)
-    if (!this.client) {
-      const apiKey = process.env.OPENAI_API_KEY
-
-      if (!apiKey) {
-        throw new Error('OPENAI_API_KEY is not set in environment variables')
-      }
-
-      this.client = new OpenAI({
-        apiKey,
-        dangerouslyAllowBrowser: false // This service should only run on server
-      })
-    }
-
-    return this.client
+    // Always create a new client instance with user's API key
+    return new OpenAI({
+      apiKey,
+      dangerouslyAllowBrowser: false
+    })
   }
 
   /**
    * Get regular completion from OpenAI (non-streaming)
    * Use this for simple requests where streaming is not needed
+   * REQUIRES user's personal API key
    */
-  static async getCompletion(params: AICompletionParams & { apiKey?: string }): Promise<AICompletionResult> {
+  static async getCompletion(params: AICompletionParams & { apiKey: string }): Promise<AICompletionResult> {
     const client = this.getClient(params.apiKey)
 
     const {
@@ -100,6 +85,7 @@ export class OpenAIService {
   /**
    * Stream completion from OpenAI (Server-Sent Events)
    * Returns async generator that yields chunks as they arrive
+   * REQUIRES user's personal API key
    *
    * Usage:
    * ```ts
@@ -109,7 +95,7 @@ export class OpenAIService {
    * ```
    */
   static async *streamCompletion(
-    params: AICompletionParams & { apiKey?: string }
+    params: AICompletionParams & { apiKey: string }
   ): AsyncGenerator<{ content: string; finish_reason?: string }> {
     const client = this.getClient(params.apiKey)
 
