@@ -8,7 +8,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import PDFParser from 'pdf2json'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = [
@@ -50,6 +49,9 @@ async function extractTextFromFile(file: File, mimeType?: string): Promise<strin
     if (effectiveType === 'application/pdf') {
       console.log('📄 Extracting text from PDF...')
       return new Promise((resolve) => {
+        // Dynamic import for CommonJS module
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const PDFParser = require('pdf2json')
         const pdfParser = new PDFParser()
 
         pdfParser.on('pdfParser_dataError', (errData: any) => {
